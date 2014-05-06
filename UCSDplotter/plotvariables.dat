@@ -1,0 +1,12 @@
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0 xmax=200 ymin=0 ymax=0 name=mass xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0 xmax=200 ymin=0 ymax=0 name=mass_nocut xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=200 ybins=0 xmin=0 xmax=200 ymin=0 ymax=0 name=met xaxis=@ yaxis=@ 
+htyp=1 plot=-1 ncat=3 xbins=10 ybins=0 xmin=0 xmax=10 ymin=0 ymax=0 name=njet20 xaxis=@ yaxis=@ 
+htyp=1 plot=-1 ncat=3 xbins=10 ybins=0 xmin=0 xmax=10 ymin=0 ymax=0 name=njet30 xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0 xmax=1 ymin=0 ymax=0 name=btag xaxis=@ yaxis=@ 
+htyp=1 plot=-1 ncat=3 xbins=10 ybins=0 xmin=0 xmax=10 ymin=0 ymax=0 name=nbtag xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0.8 xmax=1 ymin=0 ymax=0 name=id1 xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0.8 xmax=1 ymin=0 ymax=0 name=id2 xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0 xmax=.1 ymin=0 ymax=0 name=iso1 xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=100 ybins=0 xmin=0 xmax=.1 ymin=0 ymax=0 name=iso2 xaxis=@ yaxis=@ 
+htyp=0 plot=-1 ncat=3 xbins=200 ybins=0 xmin=0 xmax=200 ymin=0 ymax=0 name=jetet xaxis=@ yaxis=@ 

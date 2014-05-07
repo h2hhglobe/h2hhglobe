@@ -1,3 +1,13 @@
 mu_glo_id_tight
 mu_glo_id_loose
 mu_glo_p4_corr
+
+met_pfmet
+met_phi_pfmet
+shiftMET_pt
+shiftMET_e
+shiftMET_eta
+shiftMET_phi
+
+jet_algoPF1_genMatched
+jet_algoPF1_genPt

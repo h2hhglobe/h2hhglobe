@@ -5,6 +5,9 @@
 
 using namespace std;
 
+void SSLeptonAnalysis::GetBranches(TTree *t, std::set<TBranch *>& s ) 
+{}
+
 // ----------------------------------------------------------------------------------------------------
 SSLeptonAnalysis::SSLeptonAnalysis()  : 
   name_("SSLeptonAnalysis")
@@ -69,50 +72,6 @@ void SSLeptonAnalysis::Init(LoopAll& l) {
   if (l.typerun == l.kReduce)
     muCorrector_ = new MuScleFitCorrector(muFitParametersFile);
   
-  if (l.typerun != l.kReduce) {
-    // setup roocontainer
-    FillSignalLabelMap(l);
-    
-    l.rooContainer->BlindData(doBlinding);
-    l.rooContainer->AddGlobalSystematic("lumi",1.044,1.00);
-    l.rooContainer->SetNCategories(nCategories_);
-    l.rooContainer->AddObservable("CMS_hh_mass" ,massMin,massMax);
-    l.rooContainer->AddConstant("IntLumi",l.intlumi_);
-    
-    //// SM Model
-    //l.rooContainer->AddConstant("XSBR_ggh_125",0.0350599);
-    //l.rooContainer->AddConstant("XSBR_vbf_125",0.00277319);
-    //l.rooContainer->AddConstant("XSBR_wzh_125",0.002035123);
-    //l.rooContainer->AddConstant("XSBR_tth_125",0.000197718);
-    
-    l.rooContainer->CreateDataSet("CMS_hh_mass","data_mass"    ,nDataBins);
-    l.rooContainer->CreateDataSet("CMS_hh_mass","bkg_mass"     ,nDataBins);
-    
-    //for(size_t isig=0; isig<sigPointsToBook.size(); ++isig) {
-    //  int sig = sigPointsToBook[isig];
-    //l.rooContainer->CreateDataSet("CMS_hh_mass",Form("sig_ggh_mass_m%d",sig),nDataBins);
-    l.rooContainer->CreateDataSet("CMS_hh_mass", "sig_lambdaXX" ,nDataBins);
-    //}
-    
-    std::string postfix=(dataIs2011?"":"_8TeV");
-    // build the model
-    buildBkgModel(l, postfix);
-  }
-  
-  ////
-  //// Jet Handler for sorting out jet energies
-  ////
-  //
-  //if( recomputeBetas || recorrectJets || rerunJetMva || recomputeJetWp || applyJer || applyJecUnc || l.typerun != l.kFill ) {
-  //std::cout << "JetHandler: \n"
-  //	    << "recomputeBetas " << recomputeBetas << "\n"
-  //	    << "recorrectJets " << recorrectJets << "\n"
-  //	    << "rerunJetMva " << rerunJetMva << "\n"
-  //	    << "recomputeJetWp " << recomputeJetWp
-  //	    << std::endl;
-  //jetHandler_ = new JetHandler(jetHandlerCfg, l);
-  //}
-  
   hltSelection.push_back("HLT_Mu17_Mu8_v*");
   hltSelection.push_back("HLT_IsoMu24_v*");
   hltSelection.push_back("HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
@@ -125,154 +84,24 @@ void SSLeptonAnalysis::Init(LoopAll& l) {
   hltSelection.push_back("HLT_Mu8_Ele8_CaloIdT_TrkIdVL_Mass*_v*");
   hltSelection.push_back("HLT_Mu14_Ele14_Mass8_CaloIdT_CaloIsoVL_TrkIdVL_pfMHT40_v*");
 }
-	      
-void SSLeptonAnalysis::buildBkgModel(LoopAll& l, const std::string& postfix) {
-  // sanity check
-  if( bkgPolOrderByCat.size() != nCategories_ ) {
-    std::cout << "Number of categories not consistent with specified background model " << nCategories_ << " " << bkgPolOrderByCat.size() << std::endl;
-    assert( 0 );
-  }
-  
-  
-  l.rooContainer->AddRealVar("CMS_hh_pol6_0"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol6_1"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol6_2"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol6_3"+postfix,-0.01,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol6_4"+postfix,-0.01,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol6_5"+postfix,-0.01,-1.0,1.0);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol6_0"+postfix,"@0*@0","CMS_hh_pol6_0"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol6_1"+postfix,"@0*@0","CMS_hh_pol6_1"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol6_2"+postfix,"@0*@0","CMS_hh_pol6_2"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol6_3"+postfix,"@0*@0","CMS_hh_pol6_3"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol6_4"+postfix,"@0*@0","CMS_hh_pol6_4"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol6_5"+postfix,"@0*@0","CMS_hh_pol6_4"+postfix);
-  l.rooContainer->AddRealVar("CMS_hh_pol5_0"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol5_1"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol5_2"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol5_3"+postfix,-0.01,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_pol5_4"+postfix,-0.01,-1.0,1.0);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol5_0"+postfix,"@0*@0","CMS_hh_pol5_0"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol5_1"+postfix,"@0*@0","CMS_hh_pol5_1"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol5_2"+postfix,"@0*@0","CMS_hh_pol5_2"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol5_3"+postfix,"@0*@0","CMS_hh_pol5_3"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modpol5_4"+postfix,"@0*@0","CMS_hh_pol5_4"+postfix);
 
-  l.rooContainer->AddRealVar("CMS_hh_quartic0"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_quartic1"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_quartic2"+postfix,-0.1,-1.0,1.0);
-  l.rooContainer->AddRealVar("CMS_hh_quartic3"+postfix,-0.01,-1.0,1.0);
-  l.rooContainer->AddFormulaVar("CMS_hh_modquartic0"+postfix,"@0*@0","CMS_hh_quartic0"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modquartic1"+postfix,"@0*@0","CMS_hh_quartic1"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modquartic2"+postfix,"@0*@0","CMS_hh_quartic2"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modquartic3"+postfix,"@0*@0","CMS_hh_quartic3"+postfix);
+int SSLeptonAnalysis::categories(TLorentzVector* p1, TLorentzVector* p2, int mixed) {
 
-  l.rooContainer->AddRealVar("CMS_hh_quad0"+postfix,-0.1,-1.5,1.5);
-  l.rooContainer->AddRealVar("CMS_hh_quad1"+postfix,-0.01,-1.5,1.5);
-  l.rooContainer->AddFormulaVar("CMS_hh_modquad0"+postfix,"@0*@0","CMS_hh_quad0"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modquad1"+postfix,"@0*@0","CMS_hh_quad1"+postfix);
-
-  l.rooContainer->AddRealVar("CMS_hh_cubic0"+postfix,-0.1,-1.5,1.5);
-  l.rooContainer->AddRealVar("CMS_hh_cubic1"+postfix,-0.1,-1.5,1.5);
-  l.rooContainer->AddRealVar("CMS_hh_cubic2"+postfix,-0.01,-1.5,1.5);
-  l.rooContainer->AddFormulaVar("CMS_hh_modcubic0"+postfix,"@0*@0","CMS_hh_cubic0"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modcubic1"+postfix,"@0*@0","CMS_hh_cubic1"+postfix);
-  l.rooContainer->AddFormulaVar("CMS_hh_modcubic2"+postfix,"@0*@0","CMS_hh_cubic2"+postfix);
-
-  l.rooContainer->AddRealVar("CMS_hh_lin0"+postfix,-0.01,-1.5,1.5);
-  l.rooContainer->AddFormulaVar("CMS_hh_modlin0"+postfix,"@0*@0","CMS_hh_lin0"+postfix);
-
-  l.rooContainer->AddRealVar("CMS_hh_plaw0"+postfix,0.01,-10,10);
-
-  l.rooContainer->AddRealVar("CMS_hh_voigtexp_0"+postfix, 91.186, 80.0, 100.0);
-  l.rooContainer->AddRealVar("CMS_hh_voigtexp_1"+postfix, 2.125, 0.0, 5.0);
-  l.rooContainer->AddRealVar("CMS_hh_voigtexp_2"+postfix, 5, 0, 10.0);
-  l.rooContainer->AddRealVar("CMS_hh_voigtexp_3"+postfix,-1.,-10.0,0.0);
-  l.rooContainer->AddRealVar("CMS_hh_voigtexp_4"+postfix, .5, .0 , 1.0);
-
-  //l.rooContainer->AddRealVar("CMS_hh_voigt_0"+postfix, 91.186, 88.0, 94.0);
-  //l.rooContainer->AddRealVar("CMS_hh_voigt_1"+postfix, 2.495, 0.0, 0.0);
-  //l.rooContainer->AddRealVar("CMS_hh_voigt_2"+postfix, 5., 0., 10.0);
-
-  // prefix for models parameters
-  std::map<int,std::string> parnames;
-  parnames[1] = "modlin";
-  parnames[2] = "modquad";
-  parnames[3] = "modcubic";
-  parnames[4] = "modquartic";
-  parnames[5] = "modpol5_";
-  //parnames[5] = "voigt_";
-  parnames[6] = "modpol6_";
-  parnames[7] = "voigtexp_";
-  parnames[-1] = "plaw";
-
-
-  // map order to categories flags + parameters names
-  std::map<int, std::pair<std::vector<int>, std::vector<std::string> > > catmodels;
-  // fill the map
-  for(int icat=0; icat<nCategories_; ++icat) {
-    // get the poly order for this category
-    int catmodel = bkgPolOrderByCat[icat];
-    if (catmodel == 7)
-      catmodel = 5;
-    int parnameIndex = bkgPolOrderByCat[icat];
-    std::vector<int> & catflags = catmodels[catmodel].first;
-    std::vector<std::string> & catpars = catmodels[catmodel].second;
-    // if this is the first time we find this order, build the parameters
-    if( catflags.empty() ) {
-      assert( catpars.empty() );
-      // by default no category has the new model
-      catflags.resize(nCategories_, 0);
-      std::string & parname = parnames[parnameIndex];
-      if( catmodel > 0 ) {
-        for(int iorder = 0; iorder<catmodel; ++iorder) {
-          std::cout << "HtoLL " <<   Form( "CMS_hh_%s%d%s", parname.c_str(), iorder, +postfix.c_str() ) << std::endl;
-          catpars.push_back( Form( "CMS_hh_%s%d%s", parname.c_str(), iorder, +postfix.c_str() ) );
-        }
-      } else {
-        if( catmodel != -1 ) {
-          std::cout << "The only supported negative bkg poly order is -1, ie 1-parmeter power law" << std::endl;
-          assert( 0 );
-        }
-        catpars.push_back( Form( "CMS_hh_%s%d%s", parname.c_str(), 0, +postfix.c_str() ) );
-      }
-    } else if ( catmodel != -1 ) {
-      
-      assert( catflags.size() == nCategories_ && catpars.size() == catmodel );
-    }
-    // chose category order
-    catflags[icat] = 1;
-  }
-  
-  // now loop over the models and allocate the pdfs
-  for(std::map<int, std::pair<std::vector<int>, std::vector<std::string> > >::iterator modit = catmodels.begin();
-      modit!=catmodels.end(); ++modit ) {
-    std::vector<int> & catflags = modit->second.first;
-    std::vector<std::string> & catpars = modit->second.second;
-    
-    if( modit->first > 0 ) {
-      l.rooContainer->AddSpecificCategoryPdf(&catflags[0],"data_voigtexp_model"+postfix,
-                                             "0","CMS_hh_mass", catpars, 7);
-      // >= 71 means RooBernstein of order >= 1
-    } else {
-      l.rooContainer->AddSpecificCategoryPdf(&catflags[0],"data_pol_model"+postfix,
-                                             "0","CMS_hh_mass",catpars,6);
-      // 6 is power law
-    }
-  }
-}
-
-int SSLeptonAnalysis::categories(TLorentzVector* p1, TLorentzVector* p2, bool mixed) {
-  
-  if (fabs(p1->Eta())<1.479 and fabs(p2->Eta()) < 1.479)
-    return 0;
-  else {
-    if (!mixed)
-      return 1;
+  if (mixed == 1) {
+    if (fabs(p1->Eta())<1.479 and fabs(p2->Eta()) < 1.479)
+      return 0;
     else
-      if (fabs(p1->Eta()) > 1.479)
-	return 2;
-      else
-	return 1;
+      return 1;
+  } else if (mixed == 0){
+    if (fabs(p1->Eta())<0.8 and fabs(p2->Eta())<0.8)
+      return 0;
+    else
+      return 1;
+  } else {
+    if (fabs(p1->Eta()) > 1.479)
+      return 2;
+    else
+      return 1;
   }
 }
 
@@ -286,7 +115,7 @@ bool SSLeptonAnalysis::removeZLeptons(LoopAll& l, int l1, bool isMuon) {
       if (l.mu_glo_charge[l1] != l.mu_glo_charge[i]) {
 	TLorentzVector* p2 = (TLorentzVector*)(l.mu_glo_p4_corr->At(i));
 	float temp_mass = (*p1+*p2).M();
-	if (temp_mass > 91.186-15. or temp_mass < 91.186+15)
+	if (temp_mass > 91.186-10. or temp_mass < 91.186+10)
 	  return true;
       }
     }
@@ -299,7 +128,7 @@ bool SSLeptonAnalysis::removeZLeptons(LoopAll& l, int l1, bool isMuon) {
       if (l.el_std_charge[l1] != l.el_std_charge[i]) {
 	TLorentzVector* p2 = (TLorentzVector*)(l.el_std_p4_corr->At(i));
 	float temp_mass = (*p1+*p2).M();
-	if (temp_mass > 91.186-15. or temp_mass < 91.186+15)
+	if (temp_mass > 91.186-10. or temp_mass < 91.186+10)
 	  return true;
       }
     }
@@ -319,7 +148,7 @@ bool SSLeptonAnalysis::Analysis(LoopAll& l, Int_t jentry) {
   
   if (cur_type != 0) {
     unsigned int n_pu = l.pu_n;
-    pu_weight = getPuWeight(l.pu_n, cur_type, &(l.sampleContainer[l.current_sample_index]), jentry == 1);
+    pu_weight = 1;//getPuWeight(l.pu_n, cur_type, &(l.sampleContainer[l.current_sample_index]), jentry == 1);
     weight = pu_weight * l.sampleContainer[l.current_sample_index].weight();
   }
 
@@ -342,14 +171,10 @@ bool SSLeptonAnalysis::Analysis(LoopAll& l, Int_t jentry) {
 
   Float_t mass[100];
   Int_t type[100], cat[100];
-  Int_t index1[10], index2[10];
-
-  float sumPt = 0;
+  Int_t index1[100], index2[100];
   Int_t pairs = 0;
-  float temp_mass = 0;
-  float temp_id1=-9999, temp_id2=-9999., temp_iso1=-9999., temp_iso2=-9999.;
-  int temp_index1 = -1, temp_index2 = -1;
-  int temp_type = -1, temp_cat = -1;
+  Float_t sumPt[100];
+
   if (goodMu.size() != 0) {
     for (unsigned int i=0; i<goodMu.size()-1; i++) {
       TLorentzVector* p1 = (TLorentzVector*)(l.mu_glo_p4_corr->At(goodMu[i]));
@@ -357,28 +182,16 @@ bool SSLeptonAnalysis::Analysis(LoopAll& l, Int_t jentry) {
 	if (l.mu_glo_charge[goodMu[i]] == l.mu_glo_charge[goodMu[j]]) {
 	  TLorentzVector* p2 = (TLorentzVector*)(l.mu_glo_p4_corr->At(goodMu[j]));
 	  
-	  float tempSumPt = p1->Pt() + p2->Pt();
-	  if (tempSumPt > sumPt) {
-	    sumPt = tempSumPt;
-	    temp_mass = (*p1+*p2).M();
-	    temp_type = 0;
-	    temp_cat = categories(p1, p2);
-	    temp_index1 = goodMu[i];
-	    temp_index2 = goodMu[j];
-	  }
+	  sumPt[pairs] = p1->Pt() + p2->Pt();
+	  mass[pairs] = (*p1+*p2).M();
+	  type[pairs] = 0;
+	  cat[pairs] = categories(p1, p2, 0);
+	  index1[pairs] = goodMu[i];
+	  index2[pairs] = goodMu[j];
+	  pairs++;
 	}
       }
     }
-  }
-
-  if (sumPt > 0) {
-    sumPt = 0;
-    mass[pairs] = temp_mass;
-    type[pairs] = temp_type;
-    cat[pairs] = temp_cat;
-    index1[pairs] = temp_index1;
-    index2[pairs] = temp_index2;
-    pairs++;
   }
 
   if (goodEl.size() != 0) {	
@@ -387,30 +200,17 @@ bool SSLeptonAnalysis::Analysis(LoopAll& l, Int_t jentry) {
       for (unsigned int j=i+1; j<goodEl.size(); j++) {
 	if (l.el_std_charge[goodEl[i]] == l.el_std_charge[goodEl[j]]) {
 	  TLorentzVector* p2 = (TLorentzVector*)(l.el_std_p4_corr->At(goodEl[j]));
-	  float tempSumPt = p1->Pt() + p2->Pt();
-	  if (tempSumPt > sumPt) {
-	    sumPt = tempSumPt;
-	    temp_mass = (*p1+*p2).M();
-	    temp_type = 1;
-	    temp_cat = categories(p1, p2);
-	    temp_index1 = goodEl[i];
-	    temp_index2 = goodEl[j];
-	  }
+	  sumPt[pairs] = p1->Pt() + p2->Pt();
+	  mass[pairs] = (*p1+*p2).M();
+	  type[pairs] = 1;
+	  cat[pairs] = categories(p1, p2, 1);
+	  index1[pairs] = goodEl[i];
+	  index2[pairs] = goodEl[j];
+	  pairs++;
 	}
       }
     }
   }
-
-  if (sumPt > 0) {
-    sumPt = 0;
-    mass[pairs] = temp_mass;
-    type[pairs] = temp_type;
-    cat[pairs] = temp_cat; 
-    index1[pairs] = temp_index1;
-    index2[pairs] = temp_index2;
-    pairs++;
-  }  
-
 
   if (goodMu.size() != 0 and goodEl.size() != 0) {
     for (unsigned int i=0; i<goodEl.size(); i++) {
@@ -418,77 +218,25 @@ bool SSLeptonAnalysis::Analysis(LoopAll& l, Int_t jentry) {
       for (unsigned int j=0; j<goodMu.size(); j++) {
 	if (l.el_std_charge[goodEl[i]] == l.mu_glo_charge[goodMu[j]]) {
 	  TLorentzVector* p2 = (TLorentzVector*)(l.mu_glo_p4_corr->At(goodMu[j]));
-	  float tempSumPt = p1->Pt() + p2->Pt();
-	  if (tempSumPt > sumPt) {
-	    sumPt = tempSumPt;
-	    temp_mass = (*p1+*p2).M();
-	    temp_type = 2;
-	    temp_cat = categories(p1, p2, true);
-	    temp_index1 = goodEl[i];
-	    temp_index2 = goodMu[j];
-	  }
+	  sumPt[pairs] = p1->Pt() + p2->Pt();
+	  mass[pairs] = (*p1+*p2).M();
+	  type[pairs] = 2;
+	  cat[pairs] = categories(p1, p2, 2);
+	  index1[pairs] = goodEl[i];
+	  index2[pairs] = goodMu[j];
+	  pairs++;
 	}
       }
     }
   }
 
-  if (sumPt > 0) {
-    sumPt = 0;
-    mass[pairs] = temp_mass;
-    type[pairs] = temp_type;
-    cat[pairs] = temp_cat; 
-    index1[pairs] = temp_index1;
-    index2[pairs] = temp_index2;
-    pairs++;
-  }
-
   if (pairs > 0) {
-    Tree(l, pairs, type, mass, cat, index1, index2, weight, pu_weight);
-    //for (int i=0; i<pairs; i++) 
-    //  FillRooContainer(l, cur_type, mass[i], cat[i], weight);
+    Tree(l, pairs, type, sumPt, mass, cat, index1, index2, weight, pu_weight);
     return true;
   }
 
   return false;
 }
-
-void SSLeptonAnalysis::FillRooContainer(LoopAll& l, int cur_type, float mass, int category, float weight) {
-
-  if (cur_type == 0 ) {
-    l.rooContainer->InputDataPoint("data_mass",category,mass);
-  } else if (cur_type > 0 ) {
-    //  if( doMcOptimization ) {
-    //   l.rooContainer->InputDataPoint("data_mass",category,mass,weight);
-    //} else if ( cur_type != 3 && cur_type != 4 ) {
-    l.rooContainer->InputDataPoint("bkg_mass",category,mass,weight);
-    //}
-  } else if (cur_type < 0) {
-    l.rooContainer->InputDataPoint("sig_"+GetSignalLabel(cur_type),category,mass,weight);
-  }
-}
-
-void SSLeptonAnalysis::FillSignalLabelMap(LoopAll & l) {
-  
-  signalLabels[-100]="lambdaXX";
-}
-
-std::string SSLeptonAnalysis::GetSignalLabel(int id) {
-  // For the lazy man, can return a memeber of the map rather than doing it yourself
-  std::map<int,std::string>::iterator it = signalLabels.find(id);
-
-  if (it!=signalLabels.end()){
-    return it->second;
-  } else {
-    
-    std::cerr << "No Signal Type defined in map with id - " << id << std::endl;
-    return "NULL";
-  }
-}
-
-
-// ----------------------------------------------------------------------------------------------------
-void SSLeptonAnalysis::GetBranches(TTree *t, std::set<TBranch *>& s ) 
-{}
 
 // ----------------------------------------------------------------------------------------------------
 void SSLeptonAnalysis::FillReductionVariables(LoopAll& l, int jentry) {
@@ -520,6 +268,7 @@ void SSLeptonAnalysis::FillReductionVariables(LoopAll& l, int jentry) {
       l.mu_glo_id_tight[i] = 0;
   }
 
+  l.doJetMatching(*l.jet_algoPF1_p4,*l.genjet_algo1_p4,l.jet_algoPF1_genMatched,l.jet_algoPF1_vbfMatched,l.jet_algoPF1_bgenMatched,l.jet_algoPF1_cgenMatched,l.jet_algoPF1_lgenMatched,l.jet_algoPF1_genPt,l.jet_algoPF1_genDr);
   MetCorrections2012(l);
 
 //  if (l.itype[l.current] < 0) {
@@ -614,7 +363,7 @@ bool SSLeptonAnalysis::SelectEventsReduction(LoopAll& l, int jentry) {
     if (p4->Et() > 20.)
       goodEl++;
   }
-  
+
   return ((goodMu+goodEl) > 1);
 }
 
@@ -645,13 +394,34 @@ void SSLeptonAnalysis::ReducedOutputTree(LoopAll &l, TTree * outputTree) {
   //l.Branch_fsr_eta(outputTree);
   //l.Branch_fsr_phi(outputTree);
   //l.Branch_higgs(outputTree);
+
+  l.Branch_jet_algoPF1_genMatched(outputTree);
+  l.Branch_jet_algoPF1_bgenMatched(outputTree);
+  l.Branch_jet_algoPF1_cgenMatched(outputTree);
+  l.Branch_jet_algoPF1_lgenMatched(outputTree);
+  l.Branch_jet_algoPF1_vbfMatched(outputTree);
+  l.Branch_jet_algoPF1_genPt(outputTree);
+  l.Branch_jet_algoPF1_genDr(outputTree);
+
+  l.Branch_shiftMET_pt(outputTree);
+  l.Branch_shiftMET_phi(outputTree);
+  l.Branch_smearMET_pt(outputTree);
+  l.Branch_smearMET_phi(outputTree);
+  l.Branch_shiftsmearMET_pt(outputTree);
+  l.Branch_shiftsmearMET_phi(outputTree);
+  l.Branch_shiftscaleMET_pt(outputTree);
+  l.Branch_shiftscaleMET_phi(outputTree);
+  l.Branch_shiftMET_eta(outputTree);
+  l.Branch_shiftMET_e(outputTree);
+  l.Branch_shiftscaleMET_eta(outputTree);
+  l.Branch_shiftscaleMET_e(outputTree);
 }
 
 // ----------------------------------------------------------------------------------------------------
 void SSLeptonAnalysis::ResetAnalysis()
 {}
 
-void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass, Int_t* cat, Int_t* index1, Int_t* index2,
+void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt,  Float_t* mass, Int_t* cat, Int_t* index1, Int_t* index2,
 			    Float_t weight, Float_t pu_weight) {
 
 
@@ -664,12 +434,16 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass,
   
   l.FillTree("pairs", pairs);
   l.FillTree("type",  type, pairs);
+  l.FillTree("sumpt", sumPt, pairs);
   l.FillTree("mass",  mass, pairs);
   l.FillTree("cat",    cat, pairs);
 
+  Float_t et1[100], eta1[100], phi1[100];
+  Float_t et2[100], eta2[100], phi2[100];
   int ch1_1[100], ch2_1[100], ch3_1[100];
   int ch1_2[100], ch2_2[100], ch3_2[100];
   Float_t id1[100], id2[100], iso1[100], iso2[100];
+  Float_t corrmet[100], corrmetPhi[100];
   for (unsigned int i=0; i<pairs; i++) {
     if (type[i] == 0) {
       id1[i] = 9999;
@@ -682,6 +456,16 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass,
       ch1_2[i] = l.mu_glo_charge[index2[i]];
       ch2_2[i] = l.mu_glo_charge[index2[i]];
       ch3_2[i] = l.mu_glo_charge[index2[i]];
+      et1[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index1[i]))->Et();
+      eta1[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index1[i]))->Eta();
+      phi1[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index1[i]))->Phi();
+      et2[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i]))->Et();
+      eta2[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i]))->Eta();
+      phi2[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i]))->Phi();
+
+      MetCorrections2012_Simple( l, *((TLorentzVector*) l.mu_glo_p4_corr->At(index1[i])), *((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i])));
+      corrmet[i] = l.correctedpfMET;
+      corrmetPhi[i] = l.correctedpfMET_phi;
       
     } else if (type[i] == 1) {
       id1[i]  = l.el_std_mva_trig[index1[i]];
@@ -693,7 +477,17 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass,
       ch3_1[i] = l.el_std_ch_scpix[index1[i]];
       ch1_2[i] = l.el_std_charge[index2[i]];
       ch2_2[i] = l.el_std_ch_gsf[index2[i]];
-      ch3_2[i] = l.el_std_ch_scpix[index2[i]];
+      ch3_2[i] = l.el_std_ch_scpix[index2[i]]; 
+      et1[i] = ((TLorentzVector*)  l.el_std_p4_corr->At(index1[i]))->Et();
+      eta1[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Eta();
+      phi1[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Phi();
+      et2[i] = ((TLorentzVector*)  l.el_std_p4_corr->At(index2[i]))->Et();
+      eta2[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index2[i]))->Eta();
+      phi2[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index2[i]))->Phi();
+      
+      MetCorrections2012_Simple( l, *((TLorentzVector*) l.el_std_p4_corr->At(index1[i])), *((TLorentzVector*) l.el_std_p4_corr->At(index2[i])));
+      corrmet[i] = l.correctedpfMET;
+      corrmetPhi[i] = l.correctedpfMET_phi;
     } else {
       id1[i]  = l.el_std_mva_trig[index1[i]];
       id2[i] = 9999;
@@ -704,10 +498,26 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass,
       ch3_1[i] = l.el_std_ch_scpix[index1[i]];
       ch1_2[i] = l.mu_glo_charge[index2[i]];
       ch2_2[i] = l.mu_glo_charge[index2[i]];
-      ch3_2[i] = l.mu_glo_charge[index2[i]];
+      ch3_2[i] = l.mu_glo_charge[index2[i]]; 
+      et1[i] = ((TLorentzVector*)  l.el_std_p4_corr->At(index1[i]))->Et();
+      eta1[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Eta();
+      phi1[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Phi();
+      et2[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i]))->Et();
+      eta2[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i]))->Eta();
+      phi2[i] = ((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i]))->Phi();
 
+      MetCorrections2012_Simple( l, *((TLorentzVector*) l.el_std_p4_corr->At(index1[i])), *((TLorentzVector*) l.mu_glo_p4_corr->At(index2[i])));
+      corrmet[i] = l.correctedpfMET;
+      corrmetPhi[i] = l.correctedpfMET_phi;
     }
   }
+
+  l.FillTree("et1", et1, pairs);
+  l.FillTree("eta1", eta1, pairs);
+  l.FillTree("phi1", phi1, pairs);
+  l.FillTree("et2", et2, pairs);
+  l.FillTree("eta2", eta2, pairs);
+  l.FillTree("phi2", phi2, pairs);
 
   l.FillTree("ch1_1", ch1_1, pairs);
   l.FillTree("ch2_1", ch2_1, pairs);
@@ -725,14 +535,36 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass,
   l.FillTree("met", (float)l.met_pfmet);
   l.FillTree("metPhi", (float)l.met_phi_pfmet);
 
+  l.FillTree("corrmet", corrmet, pairs);
+  l.FillTree("corrmetPhi", corrmetPhi, pairs);
+
+
   Bool_t jetid_flags[100];
   for(int ijet=0; ijet<l.jet_algoPF1_n; ++ijet ) {
     jetid_flags[ijet] = PileupJetIdentifier::passJetId((*l.jet_algoPF1_cutbased_wp_level_ext)[ijet][0], PileupJetIdentifier::kLoose);
   }
 
-  std::vector<int> selectedJets = l.SelectNHighestPtJets(l.el_std_p4_corr, l.mu_glo_p4_corr, jetid_flags, 30, 2.4, 0.6);
+  int njets30 = l.SelectNHighestPtJets(l.el_std_p4_corr, l.mu_glo_p4_corr, jetid_flags, 30, 2.4, 0.6).size();
+  l.FillTree("njets30", (int) njets30);
+
+  std::vector<int> selectedJets = l.SelectNHighestPtJets(l.el_std_p4_corr, l.mu_glo_p4_corr, jetid_flags, 20, 2.4, 0.6);
   int njets = selectedJets.size();
-  l.FillTree("njets", (int) njets);
+  l.FillTree("njets20", (int) njets);
+
+  Float_t jetet[100], jeteta[100], jetphi[100], jetm[100];
+  for (int i=0; i<njets; i++) {
+    TLorentzVector* j = (TLorentzVector*)l.jet_algoPF1_p4->At(selectedJets[i]);
+    jetet[i] = j->Et();
+    jeteta[i] = j->Eta();
+    jetphi[i] = j->Phi();
+    jetm[i] = j->M();
+  }
+  
+  l.FillTree("jetet", jetet, njets);
+  l.FillTree("jeteta", jeteta, njets);
+  l.FillTree("jetphi", jetphi, njets);
+  l.FillTree("jetM",  jetm, njets);
+
 
   Float_t btag[100];
   Float_t btag2[100];
@@ -755,24 +587,6 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass,
   }
 
   l.FillTree("btag", btag, njets);
-
-  //for (unsigned int i=0; i<l.jet_algoPF1_n; i++) 
-  //  btag2[i] = l.jet_algoPF1_csvBtag[i];
-  //
-  //for (unsigned int i=0; i<l.jet_algoPF1_n-1; i++) {
-  //  for (unsigned int j=i+1; j<l.jet_algoPF1_n;j++) {
-  //    if (btag2[i] < btag2[j]) {
-  //	float temp = btag2[j];
-  //	btag2[j] = btag2[i];
-  //	btag2[i] = temp;
-  //    }
-  //  }
-  //}
-  //
-  //int nbtags = std::min(4, l.jet_algoPF1_n);
-  //std::cout << nbtags <<std::endl;
-  //l.FillTree("nbtags", nbtags);
-  //l.FillTree("btag2", btag2, nbtags);
 }
 
 bool SSLeptonAnalysis::checkEventHLT(LoopAll& l, std::vector<std::string> paths) {
@@ -808,25 +622,24 @@ bool SSLeptonAnalysis::checkEventHLT(LoopAll& l, std::vector<std::string> paths)
   return result;
 }
 
-void SSLeptonAnalysis::MetCorrections2012(LoopAll& l)
-{
-    //shift met (reduction step)
-    //in mc smearing should be applied first and then shifting
-    //both these are performed at analysis step
-    TLorentzVector unpfMET;
-    unpfMET.SetPxPyPzE (l.met_pfmet*cos(l.met_phi_pfmet),
-           l.met_pfmet*sin(l.met_phi_pfmet),
-           0,
-           sqrt(l.met_pfmet*cos(l.met_phi_pfmet) * l.met_pfmet*cos(l.met_phi_pfmet)
-           + l.met_pfmet*sin(l.met_phi_pfmet) * l.met_pfmet*sin(l.met_phi_pfmet)));
-
-    bool isMC = l.itype[l.current]!=0;
-
-    TLorentzVector shiftMET_corr = l.shiftMet(&unpfMET,isMC);
-    l.shiftMET_pt = shiftMET_corr.Pt();
-    l.shiftMET_phi = shiftMET_corr.Phi();
-    l.shiftMET_eta = shiftMET_corr.Eta();
-    l.shiftMET_e = shiftMET_corr.Energy();
+void SSLeptonAnalysis::MetCorrections2012(LoopAll& l) {
+  //shift met (reduction step)
+  //in mc smearing should be applied first and then shifting
+  //both these are performed at analysis step
+  TLorentzVector unpfMET;
+  unpfMET.SetPxPyPzE (l.met_pfmet*cos(l.met_phi_pfmet),
+		      l.met_pfmet*sin(l.met_phi_pfmet),
+		      0,
+		      sqrt(l.met_pfmet*cos(l.met_phi_pfmet) * l.met_pfmet*cos(l.met_phi_pfmet)
+			   + l.met_pfmet*sin(l.met_phi_pfmet) * l.met_pfmet*sin(l.met_phi_pfmet)));
+  
+  bool isMC = l.itype[l.current]!=0;
+  
+  TLorentzVector shiftMET_corr = l.shiftMet(&unpfMET,isMC);
+  l.shiftMET_pt = shiftMET_corr.Pt();
+  l.shiftMET_phi = shiftMET_corr.Phi();
+  l.shiftMET_eta = shiftMET_corr.Eta();
+  l.shiftMET_e = shiftMET_corr.Energy();
 }
 
 

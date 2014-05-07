@@ -13,15 +13,28 @@ type=2 name=pu_weight
 type=0 name=nvtx
 type=2 name=rho
 type=0 name=pairs
-type=0 name=njets
+type=0 name=njets20
+type=0 name=njets30
+type=12 name=jetet  size=njets20
+type=12 name=jeteta size=njets20
+type=12 name=jetphi size=njets20
+type=12 name=jetM   size=njets20
 type=2 name=met
 type=2 name=metPhi
+type=12 name=corrmet size=pairs
+type=12 name=corrmetPhi size=pairs
 type=12 name=mass size=pairs
 type=12 name=id1 size=pairs
 type=12 name=id2 size=pairs
 type=12 name=iso1 size=pairs
 type=12 name=iso2 size=pairs
 type=10 name=cat  size=pairs  
+type=12 name=et1 size=pairs
+type=12 name=et2 size=pairs
+type=12 name=eta1 size=pairs
+type=12 name=eta2 size=pairs
+type=12 name=phi1 size=pairs
+type=12 name=phi2 size=pairs
 type=10 name=ch1_1  size=pairs  
 type=10 name=ch2_1  size=pairs  
 type=10 name=ch3_1  size=pairs  
@@ -29,7 +42,5 @@ type=10 name=ch1_2  size=pairs
 type=10 name=ch2_2  size=pairs  
 type=10 name=ch3_2  size=pairs  
 type=10 name=type size=pairs
-type=12 name=btag size=njets
-#type=0 name=nbtags 
-#type=12 name=btag2 size=nbtags
+type=12 name=btag size=njets20
 

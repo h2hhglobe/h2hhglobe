@@ -20,10 +20,9 @@ class SSLeptonAnalysis : public StatAnalysis {
   virtual void Term(LoopAll&);
   
   virtual void ReducedOutputTree(LoopAll &l, TTree *);
-  virtual void GetBranches(TTree *, std::set<TBranch *>& );
-  
   virtual void ResetAnalysis();
-  
+  virtual void GetBranches(TTree *t, std::set<TBranch *>& s );
+
   virtual void FillReductionVariables(LoopAll& l, int jentry);   
   virtual bool SelectEventsReduction(LoopAll&, int);
   
@@ -35,12 +34,8 @@ class SSLeptonAnalysis : public StatAnalysis {
   bool ElectronMVACuts(LoopAll& l, int i);
   float ElectronIsolation(LoopAll& l, int i, float eta, float pt);
   bool checkEventHLT(LoopAll& l, std::vector<std::string> paths);
-  void Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* mass, Int_t* cat, Int_t* id1, Int_t* id2, Float_t weight, Float_t pu_weight);
-  void FillRooContainer(LoopAll& l, int cur_type, float mass, int category, float weight);
-  void FillSignalLabelMap(LoopAll & l);
-  void buildBkgModel(LoopAll& l, const std::string & postfix);
-  std::string GetSignalLabel(int id);
-  int categories(TLorentzVector* p1, TLorentzVector* p2, bool mixed = false);
+  void Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumpt, Float_t* mass, Int_t* cat, Int_t* id1, Int_t* id2, Float_t weight, Float_t pu_weight);
+  int categories(TLorentzVector* p1, TLorentzVector* p2, int mixed);
 
   void MetCorrections2012(LoopAll& l);
   void MetCorrections2012_Simple(LoopAll& l,TLorentzVector lead_p4 ,TLorentzVector sublead_p4);

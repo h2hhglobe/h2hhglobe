@@ -31,3 +31,12 @@ mu_glo_chhadiso04
 mu_glo_nehadiso04
 mu_glo_photiso04
 mu_dbCorr
+
+gp_n:1
+gp_pdgid:1
+gp_status:1
+gp_p4:1
+
+genjet_algo1_n:1
+genjet_algo1_p4:1
+

@@ -50,6 +50,7 @@ if __name__ == "__main__":
     parser.add_option("-n", action="store", type="int", dest="numberofjobs", default="0", help="number of jobs of the task.")
     parser.add_option("--resubmit", action="store", type="string", dest="jobtoresubmit", default="", help="resubmit specified jobs.")
     parser.add_option("--resubmit-failed", dest="resubmit_failed", action="store_true", default=False, help="resubmit failed jobs.")
+    parser.add_option("--not-run", dest="not_run", action="store_true", default=False, help="Do not send jobs.")
 
     (options, args) = parser.parse_args()
 
@@ -267,7 +268,7 @@ if __name__ == "__main__":
             #out2.write("rm " + outputfile + "\n")
             out2.close()
             os.system("chmod 775 "+options.tag+"/"+txtfilename)
-            
-        #os.system("bsub -q cmscaf1nd -o $PWD/"+options.tag +"/" +txtfilename+".log $PWD/"+options.tag+"/"+txtfilename)
+        if (not options.not_run):
+            os.system("bsub -q cmscaf1nd -o $PWD/"+options.tag +"/" +txtfilename+".log $PWD/"+options.tag+"/"+txtfilename)
 
     

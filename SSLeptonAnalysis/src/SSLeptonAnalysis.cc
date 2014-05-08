@@ -98,10 +98,12 @@ int SSLeptonAnalysis::categories(TLorentzVector* p1, TLorentzVector* p2, int mix
     else
       return 1;
   } else {
-    if (fabs(p1->Eta()) > 1.479)
-      return 2;
-    else
+    if (fabs(p1->Eta()) < 1.479 and fabs(p2->Eta())<1.479)
+      return 0;
+    else if (fabs(p1->Eta()) < 1.479)
       return 1;
+    else
+      return 2;
   }
 }
 
@@ -157,14 +159,14 @@ bool SSLeptonAnalysis::Analysis(LoopAll& l, Int_t jentry) {
   for (int i=0; i<l.el_std_n; i++) {
     TLorentzVector* p4 = (TLorentzVector*)(l.el_std_p4_corr->At(i));
     
-    if (ElectronMVACuts(l, i) and p4->Et() > 20. and !removeZLeptons(l, i, false))
+    if (ElectronMVACuts(l, i) and p4->Et() > 25. and !removeZLeptons(l, i, false))
       goodEl.push_back(i);
   }
 
   for (int i=0; i<l.mu_glo_n; i++) {
     TLorentzVector* p4 = (TLorentzVector*)(l.mu_glo_p4_corr->At(i));
-    if ((muIDTight and l.mu_glo_id_tight[i] == 1 and p4->Pt() > 20.) or
-	(!muIDTight and l.mu_glo_id_loose[i] == 1 and p4->Pt() > 20.))
+    if ((muIDTight and l.mu_glo_id_tight[i] == 1 and p4->Pt() > 25.) or
+	(!muIDTight and l.mu_glo_id_loose[i] == 1 and p4->Pt() > 25.))
       if (!removeZLeptons(l, i, true))
 	goodMu.push_back(i);
   }
@@ -450,6 +452,8 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt
       id2[i] = 9999;
       iso1[i] = 9999;
       iso2[i] = 9999;
+      ch_1[i] = l.mu_glo_charge[index1[i]];
+      ch_2[i] = l.mu_glo_charge[index2[i]];
       ch1_1[i] = l.mu_glo_charge[index1[i]];
       ch2_1[i] = l.mu_glo_charge[index1[i]];
       ch3_1[i] = l.mu_glo_charge[index1[i]];
@@ -477,7 +481,9 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt
       ch3_1[i] = l.el_std_ch_scpix[index1[i]];
       ch1_2[i] = l.el_std_charge[index2[i]];
       ch2_2[i] = l.el_std_ch_gsf[index2[i]];
-      ch3_2[i] = l.el_std_ch_scpix[index2[i]]; 
+      ch3_2[i] = l.el_std_ch_scpix[index2[i]];
+      ch_1[i] = l.el_std_charge[index1[i]];
+      ch_2[i] = l.el_std_charge[index2[i]]; 
       et1[i] = ((TLorentzVector*)  l.el_std_p4_corr->At(index1[i]))->Et();
       eta1[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Eta();
       phi1[i] = ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Phi();
@@ -493,6 +499,8 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt
       id2[i] = 9999;
       iso1[i] = ElectronIsolation(l, index1[i], fabs(((TLorentzVector*)l.el_std_sc->At(index1[i]))->Eta()), ((TLorentzVector*) l.el_std_p4_corr->At(index1[i]))->Pt());
       iso2[i] = 9999;
+      ch_1[i] = l.el_std_charge[index1[i]];
+      ch_2[i] = l.mu_glo_charge[index2[i]];
       ch1_1[i] = l.el_std_charge[index1[i]];
       ch2_1[i] = l.el_std_ch_gsf[index1[i]];
       ch3_1[i] = l.el_std_ch_scpix[index1[i]];
@@ -525,6 +533,8 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt
   l.FillTree("ch1_2", ch1_2, pairs);
   l.FillTree("ch2_2", ch2_2, pairs);
   l.FillTree("ch3_2", ch3_2, pairs);
+  l.FillTree("ch_1", ch_1, pairs);
+  l.FillTree("ch_2", ch_2, pairs);
 
   l.FillTree("id1",    id1, pairs);
   l.FillTree("iso1",   iso1, pairs);
@@ -567,7 +577,7 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt
 
 
   Float_t btag[100];
-  Float_t btag2[100];
+  //Float_t btag2[100];
   if (njets > 0) {
     std::vector<float> jetEnergies;
     for (unsigned int i=0; i<selectedJets.size(); i++)

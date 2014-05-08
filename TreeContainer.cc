@@ -69,13 +69,13 @@ void TreeContainer::AddTreeBranch(std::string name,int type, std::string size) {
     if (TCDEBUG) std::cout << "TreeContainer -- Creating Bool Branch " << name << std::endl;
   }  
   else if (type==10){      // array of ints
-    float_int_branches.insert(std::pair<std::string, std::vector<int>>(name, std::vector<int>(10, 0)));
+    float_int_branches.insert(std::pair<std::string, std::vector<int>>(name, std::vector<int>(100, 0)));
     tr_->Branch(name.c_str(), &float_int_branches[name][0], Form("%s[%s]/Int_t",name.c_str(), size.c_str()));
     if (TCDEBUG) 
       std::cout << "TreeContainer -- Creating Array of Float Branch " << name << std::endl;
   } 
   else if (type==12){      // array of floats
-    float_array_branches.insert(std::pair<std::string, std::vector<float>>(name, std::vector<float>(10, 0)));
+    float_array_branches.insert(std::pair<std::string, std::vector<float>>(name, std::vector<float>(100, 0)));
     tr_->Branch(name.c_str(), &float_array_branches[name][0], Form("%s[%s]/Float_t",name.c_str(), size.c_str()));
     if (TCDEBUG) 
       std::cout << "TreeContainer -- Creating Array of Float Branch " << name << std::endl;

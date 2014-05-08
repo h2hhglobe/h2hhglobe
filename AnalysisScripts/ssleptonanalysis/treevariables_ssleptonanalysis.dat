@@ -35,6 +35,8 @@ type=12 name=eta1 size=pairs
 type=12 name=eta2 size=pairs
 type=12 name=phi1 size=pairs
 type=12 name=phi2 size=pairs
+type=10 name=ch_1  size=pairs  
+type=10 name=ch_2  size=pairs  
 type=10 name=ch1_1  size=pairs  
 type=10 name=ch2_1  size=pairs  
 type=10 name=ch3_1  size=pairs  

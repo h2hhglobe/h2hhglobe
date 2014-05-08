@@ -231,7 +231,7 @@ if __name__ == "__main__":
     
     parser = OptionParser()
     parser.add_option("-b", "--blind", default=False, action="store_true", help="Do not plot data")
-    parser.add_option("-i", "--input", default="sslept_v1.root", help="Input filename")
+    parser.add_option("-i", "--input", default="sslept_v2.root", help="Input filename")
     parser.add_option("-o", "--output", default="output_sslept.root", help="Output filename")
     parser.add_option("-I", "--inputfile", default="inputfiles.dat", help="Original inputfiles.dat")
     parser.add_option("-P", "--plotvariables", default="plotvariables.dat", help="Plot definition file")
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     wsProducer = WSProducer()
     wsProducer.prepareDataSets(3) # check
 
-    counter = table.table(2, 3)
+    counter = table.table(2, 12)
 
     file = ROOT.TFile(options.input)
     tree = file.Get("opttree")
@@ -260,6 +260,7 @@ if __name__ == "__main__":
     tree.SetBranchStatus("pairs", 1)
     tree.SetBranchStatus("mass",1)
     tree.SetBranchStatus("type",1)
+    tree.SetBranchStatus("cat",1)
     tree.SetBranchStatus("met",1)
     tree.SetBranchStatus("njets20",1)
     tree.SetBranchStatus("njets30",1)
@@ -287,26 +288,26 @@ if __name__ == "__main__":
         pairs = tree.pairs
 
         for p in xrange(pairs):
-            counter.Fill(0, tree.itype, tree.type[p], tree.weight)
+            counter.Fill(0, tree.itype, tree.type[p]*4+tree.cat[p], tree.weight)
+            nbtags = 0
+            for j in xrange(tree.njets20):
+                allHistos.fillHisto("jetet", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.jetet[j], tree.weight)
+                allHistos.fillHisto("btag",  tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.btag[j], tree.weight)
+                if (tree.btag[j] > 0.7):
+                    nbtags += 1
+            allHistos.fillHisto("nbtag", tree.type[p]*4+tree.cat[p], samples[tree.itype], nbtags, tree.weight)
+                    
             if (tree.type[p] > 0 and not tightElectronCharge(tree.ch1_1, tree.ch2_1, tree.ch3_1, tree.ch1_2, tree.ch2_2, tree.ch3_2)):
                 continue
             
             #if (tree.mass[p] > 8.):
             if (1):
-                allHistos.fillHisto("mass_nocut", tree.type[p], samples[tree.itype], tree.mass[p], tree.weight)
+                allHistos.fillHisto("mass_nocut", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.mass[p], tree.weight)
 
-                allHistos.fillHisto("met", tree.type[p], samples[tree.itype], tree.met, tree.weight)
+                allHistos.fillHisto("met", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.met, tree.weight)
 
-                allHistos.fillHisto("njet20", tree.type[p], samples[tree.itype], tree.njets20, tree.weight)
-                allHistos.fillHisto("njet30", tree.type[p], samples[tree.itype], tree.njets30, tree.weight)
-                nbtags = 0
-                for j in xrange(tree.njets20):
-                    allHistos.fillHisto("jetet", tree.type[p], samples[tree.itype], tree.jetet[j], tree.weight)
-                    allHistos.fillHisto("btag", tree.type[p], samples[tree.itype], tree.btag[j], tree.weight)
-                    if (tree.btag[j] > 0.8):
-                        nbtags += 1
-                allHistos.fillHisto("nbtag", tree.type[p], samples[tree.itype], nbtags, tree.weight)
-
+                allHistos.fillHisto("njet20", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.njets20, tree.weight)
+                allHistos.fillHisto("njet30", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.njets30, tree.weight)
 
                 if (tree.met < 40.):
                     continue
@@ -319,12 +320,12 @@ if __name__ == "__main__":
                     #allHistos.fillHisto("njet20", tree.type[p], samples[tree.itype], tree.njets20, tree.weight)
                     #allHistos.fillHisto("njet30", tree.type[p], samples[tree.itype], tree.njets30, tree.weight)
 
-                    counter.Fill(1, tree.itype, tree.type[p], tree.weight)
-                    allHistos.fillHisto("mass", tree.type[p], samples[tree.itype], tree.mass[p], tree.weight)
-                    allHistos.fillHisto("id1", tree.type[p], samples[tree.itype], tree.id1[p], tree.weight)
-                    allHistos.fillHisto("id2", tree.type[p], samples[tree.itype], tree.id2[p], tree.weight)
-                    allHistos.fillHisto("iso1", tree.type[p], samples[tree.itype], tree.iso1[p], tree.weight)
-                    allHistos.fillHisto("iso2", tree.type[p], samples[tree.itype], tree.iso2[p], tree.weight)
+                    counter.Fill(1, tree.itype, tree.type[p]*4+tree.cat[p], tree.weight)
+                    allHistos.fillHisto("mass", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.mass[p], tree.weight)
+                    allHistos.fillHisto("id1", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.id1[p], tree.weight)
+                    allHistos.fillHisto("id2", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.id2[p], tree.weight)
+                    allHistos.fillHisto("iso1", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.iso1[p], tree.weight)
+                    allHistos.fillHisto("iso2", tree.type[p]*4+tree.cat[p], samples[tree.itype], tree.iso2[p], tree.weight)
                                             
                     wsProducer.fillDataset(tree.itype, tree.type[p], tree.cat[p], tree.mass[p], tree.weight)
 

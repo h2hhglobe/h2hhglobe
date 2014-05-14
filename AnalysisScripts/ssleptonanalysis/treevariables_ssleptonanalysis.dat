@@ -24,6 +24,7 @@ type=2 name=metPhi
 type=12 name=corrmet size=pairs
 type=12 name=corrmetPhi size=pairs
 type=12 name=mass size=pairs
+type=12 name=sumpt size=pairs
 type=12 name=id1 size=pairs
 type=12 name=id2 size=pairs
 type=12 name=iso1 size=pairs

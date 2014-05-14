@@ -444,6 +444,7 @@ void SSLeptonAnalysis::Tree(LoopAll& l, Int_t pairs, Int_t* type, Float_t* sumPt
   Float_t et2[100], eta2[100], phi2[100];
   int ch1_1[100], ch2_1[100], ch3_1[100];
   int ch1_2[100], ch2_2[100], ch3_2[100];
+  int ch_1[100], ch_2[100];
   Float_t id1[100], id2[100], iso1[100], iso2[100];
   Float_t corrmet[100], corrmetPhi[100];
   for (unsigned int i=0; i<pairs; i++) {
